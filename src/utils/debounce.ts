@@ -1,8 +1,8 @@
 export function debounce(fn: () => void, delay: number) {
-  void fn;
-  void delay;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   return function inner() {
-    console.log('INNER');
+    clearTimeout(timer);
+    timer = setTimeout(fn, delay);
   };
 }
