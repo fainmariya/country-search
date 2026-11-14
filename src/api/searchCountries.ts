@@ -1,3 +1,5 @@
+import { HttpError } from './HttpError';
+
 export async function searchCountries(
   query: string,
   signal: AbortSignal,
@@ -7,6 +9,9 @@ export async function searchCountries(
 
   if (response.status === 404) {
     return [];
+  }
+  if (!response.ok) {
+    throw new HttpError(response.status);
   }
   return await response.json();
 }
