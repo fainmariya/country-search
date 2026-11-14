@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { searchCountries } from '../api/searchCountries';
+import { HttpError } from '../api/HttpError';
 
 describe('searchCountries', () => {
   it('should return data when API responds successfully', async () => {
@@ -28,5 +29,18 @@ describe('searchCountries', () => {
     const result = await searchCountries('btr', controller.signal);
     expect(result).toEqual([]);
     expect(mockJson).not.toHaveBeenCalled();
+  });
+  it('should throw HttpError when API responds with 500', async () => {
+    const mockJson = vi.fn();
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: mockJson,
+    });
+    vi.stubGlobal('fetch', mockFetch);
+    const controller = new AbortController();
+    await expect(searchCountries('fra', controller.signal)).rejects.toThrow(
+      HttpError,
+    );
   });
 });
