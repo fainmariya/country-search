@@ -13,6 +13,7 @@ export function setupCountrySearch(input: HTMLInputElement): void {
     ]);
     try {
       const countries = await searchCountries(input.value, combinedSignal);
+      if (combinedSignal.aborted) return;
       console.log('Countries:', countries);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
