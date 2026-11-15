@@ -11,8 +11,6 @@ export function renderCountries(
 
     const title = document.createElement('h2');
     title.textContent = country.name;
-
-    container.append(card);
     const flag = document.createElement('span');
     flag.textContent = country.flag;
     flag.className = 'country-flag';
@@ -30,5 +28,9 @@ export function renderCountries(
     const languages = document.createElement('p');
     languages.textContent = `Languages: ${country.languages.join(', ')}`;
     card.append(flag, title, capital, region, population, languages);
+    card.addEventListener('click', () => {
+      card.classList.toggle('expanded');
+    });
+    container.append(card);
   });
 }

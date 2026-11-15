@@ -47,7 +47,10 @@ export function setupCountrySearch(
       if (error instanceof Error && error.name === 'AbortError') {
         return;
       }
-      if (error instanceof Error && error.name === 'TimeoutError') {
+      if (
+        (error instanceof Error || error instanceof DOMException) &&
+        error.name === 'TimeoutError'
+      ) {
         showError('Request timed out. Please try again.');
         return;
       }

@@ -116,4 +116,40 @@ describe('setupCountrySearch', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(resultsContainer.textContent).toBe('No countries found.');
   });
+  it('shows timeout error and retry button', async () => {
+    const timeoutController = new AbortController();
+
+    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timeoutController.signal);
+    const fetchMock = vi.fn((_url: string, options: RequestInit) => {
+      return new Promise<Response>((_resolve, reject) => {
+        options.signal?.addEventListener('abort', () => {
+          reject(options.signal?.reason);
+        });
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const input = document.createElement('input');
+    const resultsContainer = document.createElement('div');
+
+    setupCountrySearch(input, resultsContainer);
+
+    input.value = 'fr';
+    input.dispatchEvent(new Event('input'));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    timeoutController.abort(
+      new DOMException('Request timed out', 'TimeoutError'),
+    );
+
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(resultsContainer.textContent).toContain('Request timed out');
+
+    const retryButton = resultsContainer.querySelector('button');
+
+    expect(retryButton).not.toBeNull();
+    expect(retryButton?.textContent).toBe('Retry');
+  });
 });
