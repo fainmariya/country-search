@@ -9,6 +9,19 @@ export function setupCountrySearch(
   resultsContainer: HTMLDivElement,
 ): void {
   let activeController: AbortController | null = null;
+  function showError(message: string): void {
+    const errorMessage = document.createElement('p');
+    errorMessage.textContent = message;
+
+    const retryButton = document.createElement('button');
+    retryButton.textContent = 'Retry';
+
+    retryButton.addEventListener('click', () => {
+      input.dispatchEvent(new Event('input'));
+    });
+
+    resultsContainer.replaceChildren(errorMessage, retryButton);
+  }
 
   const debouncedSearch = debounce(async () => {
     if (!activeController) return;
@@ -35,10 +48,10 @@ export function setupCountrySearch(
         return;
       }
       if (error instanceof Error && error.name === 'TimeoutError') {
-        resultsContainer.textContent = 'Request timed out. Please try again.';
+        showError('Request timed out. Please try again.');
         return;
       }
-      console.log('Caught error:', error);
+      showError('Something went wrong. Please try again.');
     }
   }, 300);
 

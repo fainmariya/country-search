@@ -87,4 +87,33 @@ describe('setupCountrySearch', () => {
 
     expect(resultsContainer.textContent).not.toContain('Old country');
   });
+  it('retries search after an API error', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 500 }))
+      .mockResolvedValueOnce(new Response('[]', { status: 200 }));
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const input = document.createElement('input');
+    const resultsContainer = document.createElement('div');
+
+    setupCountrySearch(input, resultsContainer);
+
+    input.value = 'fra';
+    input.dispatchEvent(new Event('input'));
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    const retryButton = resultsContainer.querySelector('button');
+
+    expect(retryButton?.textContent).toBe('Retry');
+
+    retryButton?.click();
+
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(resultsContainer.textContent).toBe('No countries found.');
+  });
 });
