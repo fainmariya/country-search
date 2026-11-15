@@ -1,7 +1,13 @@
 import { searchCountries } from './api/searchCountries.js';
 import { debounce } from './utils/debounce.js';
+import { mapCountryResponse } from './utils/mapCountryResponse.js';
+import { renderCountries } from './ui/renderCountries.js';
+import type { CountryApiResponse } from './types/country.js';
 
-export function setupCountrySearch(input: HTMLInputElement): void {
+export function setupCountrySearch(
+  input: HTMLInputElement,
+  resultsContainer: HTMLDivElement,
+): void {
   let activeController: AbortController | null = null;
 
   const debouncedSearch = debounce(async () => {
@@ -11,16 +17,25 @@ export function setupCountrySearch(input: HTMLInputElement): void {
       activeController.signal,
       timeoutSignal,
     ]);
+    resultsContainer.textContent = 'Loading countries...';
     try {
       const countries = await searchCountries(input.value, combinedSignal);
       if (combinedSignal.aborted) return;
-      console.log('Countries:', countries);
+      if (countries.length === 0) {
+        resultsContainer.textContent = 'No countries found.';
+        return;
+      }
+      const mappedCountries = countries.map((country) =>
+        mapCountryResponse(country as CountryApiResponse),
+      );
+
+      renderCountries(mappedCountries, resultsContainer);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         return;
       }
       if (error instanceof Error && error.name === 'TimeoutError') {
-        console.log('Request timed out');
+        resultsContainer.textContent = 'Request timed out. Please try again.';
         return;
       }
       console.log('Caught error:', error);

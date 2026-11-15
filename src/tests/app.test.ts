@@ -23,7 +23,8 @@ describe('setupCountrySearch', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const input = document.createElement('input');
-    setupCountrySearch(input);
+    const resultsContainer = document.createElement('div');
+    setupCountrySearch(input, resultsContainer);
 
     input.value = 'fr';
     input.dispatchEvent(new Event('input'));
@@ -61,10 +62,9 @@ describe('setupCountrySearch', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
     const input = document.createElement('input');
-    setupCountrySearch(input);
+    const resultsContainer = document.createElement('div');
+    setupCountrySearch(input, resultsContainer);
 
     input.value = 'fr';
     input.dispatchEvent(new Event('input'));
@@ -77,7 +77,7 @@ describe('setupCountrySearch', () => {
     await vi.advanceTimersByTimeAsync(300);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(consoleSpy).toHaveBeenCalledWith('Countries:', []);
+    expect(resultsContainer.textContent).toBe('No countries found.');
 
     const oldCountries = [{ name: 'Old country' }];
 
@@ -85,6 +85,6 @@ describe('setupCountrySearch', () => {
 
     await vi.advanceTimersByTimeAsync(1);
 
-    expect(consoleSpy).not.toHaveBeenCalledWith('Countries:', oldCountries);
+    expect(resultsContainer.textContent).not.toContain('Old country');
   });
 });
